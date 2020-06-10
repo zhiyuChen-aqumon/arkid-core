@@ -65,7 +65,7 @@ class RDBExecuter(Executer):    # pylint: disable=abstract-method
             for dept_member in DeptMember.objects.filter(user=user):
                 dept_member.kill()
 
-            for group_member in GroupMember.objects.filter(user=user):
+            for group_member in GroupMember.valid_objects.filter(user=user):
                 group_member.kill()
 
             for user_perm in UserPerm.objects.filter(owner=user):

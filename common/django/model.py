@@ -20,6 +20,9 @@ class ActiveManager(IgnoreDeletedManager):
         qs = super(ActiveManager, self).get_queryset().filter(is_active=True)
         return qs
 
+class ValidLiteManager(ValidManager):
+    def get_queryset(self):
+        return super().get_queryset().defer('uuid', 'is_active', 'updated', 'created')
 
 class BaseModel(models.Model):
     class Meta:

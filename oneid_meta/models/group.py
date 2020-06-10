@@ -6,7 +6,7 @@ from django.db import models
 from django.conf import settings
 from django.db.utils import IntegrityError
 
-from common.django.model import BaseOrderedModel, BaseModel
+from common.django.model import BaseOrderedModel, BaseModel, ValidLiteManager
 from oneid_meta.models.perm import GroupPerm, PermOwnerMixin
 from oneid_meta.models.mixin import TreeNode, NodeVisibilityScope
 
@@ -213,6 +213,8 @@ class GroupMember(BaseOrderedModel):
 
     user = models.ForeignKey('oneid_meta.User', on_delete=models.PROTECT)
     owner = models.ForeignKey('oneid_meta.Group', verbose_name='所属组', on_delete=models.PROTECT)
+
+    valid_objects = ValidLiteManager()
 
     class Meta:    # pylint: disable=missing-docstring
         unique_together = ('user', 'owner')

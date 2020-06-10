@@ -168,7 +168,10 @@ class User(BaseModel, PermOwnerMixin):
         用户直属组
         :rtype: list of Group
         '''
-        return [item.owner for item in GroupMember.valid_objects.filter(user=self).select_related('owner')]
+        return [
+            item.owner for item in GroupMember.valid_objects.filter(user=self).select_related('owner').defer(
+                'owner__uuid', 'owner__is_active', 'owner__updated', 'owner__created')
+        ]
 
     @property
     def group_ids(self):
@@ -209,7 +212,10 @@ class User(BaseModel, PermOwnerMixin):
         用户直属部门
         :rtype: list of Dept
         '''
-        return [item.owner for item in DeptMember.valid_objects.filter(user=self).select_related('owner')]
+        return [
+            item.owner for item in DeptMember.valid_objects.filter(user=self).select_related('owner').defer(
+                'owner__uuid', 'owner__is_active', 'owner__updated', 'owner__created')
+        ]
 
     @property
     def dept_ids(self):
@@ -325,10 +331,8 @@ class User(BaseModel, PermOwnerMixin):
     def is_admin(self):
         '''
         是否是主管理员
-        TODO: -> attr
         '''
-        return self.username == 'admin' or self.is_boss or \
-            UserPerm.valid_objects.filter(owner=self, perm__uid='system_oneid_all', value=True).exists()
+        return self.username == 'admin' or self.is_boss
 
     @property
     def is_manager(self):

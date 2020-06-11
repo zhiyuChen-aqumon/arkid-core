@@ -6,7 +6,6 @@ schema of Users
 # pylint: disable=too-many-lines
 from itertools import chain
 
-from django.core.cache import cache
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -20,6 +19,7 @@ from oneid_meta.models.perm import UserPerm, PermOwnerMixin, DeptPerm, GroupPerm
 from oneid_meta.models.mixin import TreeNode as Node
 from executer.utils.password import encrypt_password, verify_password
 from infrastructure.utils.sms import is_mobile, is_native_mobile, is_i18n_mobile, is_cn_mobile, CN_MOBILE_PREFIX
+from oneid.cache import cache
 
 
 class IsolatedManager(IgnoreDeletedManager):
@@ -124,8 +124,13 @@ class User(BaseModel, PermOwnerMixin):
         return self.from_register
 
     @property
-    def is_extern_user(self):    # pylint: disable=missing-docstring
-        return GroupMember.valid_objects.filter(user=self, owner__uid='extern').exists()
+    def is_extern_user(self):
+        '''
+        是否为外部用户
+        来自用户自主注册
+        '''
+        return GroupMember.valid_objects.filter(user=self,
+                                                owner_id=cache.get('oneid:constant:node:g_extern:id')).exists()
 
     @is_isolated.setter
     def is_isolated(self, value):

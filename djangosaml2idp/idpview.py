@@ -290,6 +290,7 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
                     'is_staff': 'is_staff',
                     'is_superuser': 'is_superuser',
                     'token': 'token',
+                    'display_name': 'display_name',
                 },
             }
         except Exception:    # pylint: disable=broad-except

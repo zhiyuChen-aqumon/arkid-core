@@ -24,6 +24,9 @@ FORMAT: 1A
 ## WechatUser (object)
 + unionid (string)
 
+## GithubUser (object)
++ github_user_id (string)
+
 ## UserProfile (object)
 + username (string)
 + name (string)
@@ -88,6 +91,7 @@ FORMAT: 1A
     + pub_key
 + custom_user (CustomUser) - May Null-> 无该键
 + wechat_user (WechatUser)
++ github_user (GithubUser) - github关联用户
 + require_reset_password(boolean) - 是否需要重置密码
 + has_password (boolean) - 是否有密码，目前仅用于邀请链接的页面
 
@@ -397,10 +401,11 @@ FORMAT: 1A
 
 
 ## AccountConfig (object)
-+ allow_register (boolean)
-+ allow_mobile (boolean)
-+ allow_email (boolean)
-+ allow_ding_qr (boolean)
++ allow_register (boolean) - 是否允许账号注册
++ allow_mobile (boolean) - 是否允许手机号登录
++ allow_email (boolean) - 是否允许邮箱登录
++ allow_ding_qr (boolean) - 是否允许钉钉扫码登录
++ allow_github (boolean) - 是否允许github账号登录
 
 ## SMSConfig (object)
 + vendor (string)
@@ -456,6 +461,11 @@ FORMAT: 1A
 + min_word (number) - 单词限制
 + is_active (boolean) - 配置是否启用
 
+## GithubConfig (object)
++ client_id (string) - github侧oauth应用唯一标识
++ client_secret (string) - github侧oauth应用秘钥
++ client_valid (boolean) - github侧oauth应用配置是否有效
+
 ## Config (object)
 + company_config (CompanyConfig)
 + ding_config (DingConfig)
@@ -464,6 +474,7 @@ FORMAT: 1A
 + email_config (EmailConfig)
 + alipay_config (AlipayConfig)
 + password_config (PasswordComplexityConfig)
++ github_config (GithubConfig) - github侧oauth配置
 
 ## CustomField (object)
 + uuid (string)
@@ -2807,101 +2818,106 @@ Content-Disposition: form-data; name='node_uid'
     + Attributes
         + err_msg (string) - 'work_qq qr not allowed'
 
-# Group SAML 2.0
-
-## APP请求认证-1 [/saml/sso/redirect/]
-APP在发送认证请求时，需将SAMLRequest放置于QueryString中，具体参数参考saml2.0协议指南
-
-### APP请求认证 [GET]
-+ Request JSON Message
-    + Attributes
-
-+ Response 302 (application/json)
-    + Attributes
-        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
-            + Issuer - (string) IdP方处理元数据请求uri
-            + Audience - (string) SP方监听SMALResponse的uri
-            + entity - (string) IdP方获取元数据地址
-            + status_code - (string) 登录状态
-            + username - (string) IdP用户名
-            + email - (string) IdP用户邮箱
-            + private_email - (string) IdP用户私人邮箱
-            + token - （string）IdP用户token
-            
-## APP请求认证-2 [/saml/sso/post/]
-APP在发送认证请求时，需将SAMLRequest放置于表单中，具体参数参考saml2.0协议指南
-
-### APP请求认证 [POST]
-+ Request JSON Message
-    + Attributes
-
-+ Response 302 (application/json)
-    + Attributes
-        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
-            + Issuer - (string) IdP方处理元数据请求uri
-            + Audience - (string) SP方监听SMALResponse的uri
-            + entity - (string) IdP方获取元数据地址
-            + status_code - (string) 登录状态
-            + username - (string) IdP用户名
-            + email - (string) IdP用户邮箱
-            + private_email - (string) IdP用户私人邮箱
-            + token - （string）IdP用户token
-            
-## 元数据信息 [/saml/metadata/]
-
-### SP获取元数据信息 [GET]
-+ Request JSON Message
-    + Attributes
-
-+ Response 200 (application/json)
-    + Attributes
-        + metadata (string) - SAML2元数据显示在网页，用于SP方获取
-
-## 元数据文件 [/saml/download/metadata/]
-
-### 下载元数据文件 [GET]
-+ Request JSON Message
-    + Attributes
-
-+ Response 200 (application/json)
-
-## 阿里云角色SSO [/saml/aliyun/sso-role/]
-
-### 获取所有用户角色SSO信息 [GET]
-+ Request JSON Message
-    + Attributes
-        
-+ Response 200 (application/json)
-    + Attributes (array[AliyunSSORole])
-    
-### 创建用户角色SSO [POST]
-+ Request JSON Message
-    + Attributes
-        + user_ids (array[number]) - 用户id列表
-        + role (array[string]) 
-        + session_duration (number)
-        
-+ Response 200 (application/json)
-    + Attributes (array[AliyunSSORole])
-
-## 指定阿里云角色SSO [/saml/aliyun/sso-role/{?username}/]
-
+## Github账号登录回调 [/github/callback/{?code}]
 + Parameters
-    + username (string) - 用户唯一标识
+    + code (string) - github登录返回一次性查询码code
 
-### 修改指定用户角色SSO信息 [PATCH]
-+ Request JSON Message
-    + Attributes(AliyunSSORole)
-        
+### 获取权限 [POST]
++ Requests JSON Message
+    + Attributes
+
 + Response 200 (application/json)
-    + Attributes (AliyunSSORole)
+    + Attributes (UserWithPermWithToken)
 
-## 阿里云角色SSO登录 [/saml/aliyun/sso-role/login/]
++ Response 200 (application/json)
+    + Attributes
+        + token （string) - 未匹配用户，返回空字段token
+        + third_party_id (string) - 返回github_user_id，用于下一步提交绑定
 
-### 登录 [GET]
++ Response 400 (application/json)
+    + Attributes
+        + err_msg (string) - 'get github id error'
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'github not allowed' 
+
+## 关联Github [/github/bind/]
+
+### 绑定Github账号 [POST]
 + Request JSON Message
     + Attributes
-        
-+ Response 302 (application/json)
+        + user_id (string) - github用户登录时查询返回的id
+        + sms_token (string) - 用户手机发短信后返回的sms_token
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
     + Attributes
-        + SAMLResponse (string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+        + err_msg (string) - 'github not allowed'
+
+## 通过Github账号注册 [/github/register/bind/]
+
+### Github用户注册+关联 [POST]
++ Request JSON Message
+    + Attributes
+        + username (string)
+        + password (string) 
+        + sms_token (string) - 绑定页面验证用户手机的sms_token
+        + user_id (string) - 从github查询的用户的id
+
++ Response 201 (application/json)
+    + Attributes (UserWithPermWithToken)
+
++ Response 403 (application/json)
+    + Attributes
+        + err_msg (string) - 'github not allowed'
+
+
+
+# SAML2 APP配置接口
+
+## APP单点登录配置 [/saml/sso/redirect]
+
++ Request 302 Redirect
+    + Attributes
+        + SAMLRequest (string) - SP方SAML重定向请求
+
++ Response 302
+    + Attributes
+        + next (string) - 重定向未登录用户到oneid登录页
+
++ Response 302
+    + Attributes
+        + SAMLResponse (base64/string) - 检查用户COOKIES['spauthn']验证已登录，生成SAMLResponse加入url中重定向到SP方acs地址
+            + Issuer - (string) IdP方处理元数据请求uri
+            + Audience - (string) SP方监听SMALResponse的uri
+            + entity - (string) IdP方获取元数据地址
+            + status_code - (string) 登录状态
+            + username - (string) IdP用户名
+            + email - (string) IdP用户邮箱
+            + private_email - (string) IdP用户私人邮箱
+            + token - （string）IdP用户token
+
+## SP获取元数据接口 [/saml/metadata/]
+
+### 获取xml [GET]
+
++ Request JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes
+        + metadata (string) - SAML2元数据显示在网页，用于SP方获取   FIXME: content-type
+
+## 下载元数据文件 [/saml/download/metadata/]
+
+### 下载 [GET]
+
++ Request JSON Message
+    + Attributes
+
++ Response 200 (application/json)
+    + Attributes
+        + metadata.xml (string) - IdP方新建时生成的元数据文件，用于在SP方配置时上传.  FIXME: content-type

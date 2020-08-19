@@ -563,7 +563,7 @@ class AliyunSSORoleView(AliyunRoleSSOAccessMixin, IdPHandlerViewMixin, View):
                 'username': 'username',
                 'token': 'token',
                 'aliyun_sso_roles': self.CUSTOM_CONFIG['role'],
-                'username': self.CUSTOM_CONFIG['role_session_name'],
+                'uid': self.CUSTOM_CONFIG['role_session_name'],
                 'aliyun_sso_session_duration': self.CUSTOM_CONFIG['session_duration'],
             },
         }

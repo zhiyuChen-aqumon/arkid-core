@@ -544,6 +544,12 @@ class AliyunSSORoleView(AliyunRoleSSOAccessMixin, IdPHandlerViewMixin, View):
             return request.user
 
     def get(self, request, *args, **kwargs):    # pylint: disable=missing-function-docstring, unused-argument, too-many-locals
+
+        if "alibabacloud" in request.path:
+            self.IN_RESPONSE_TO = 'https://signin.alibabacloud.com/saml-role/sso'
+            self.DESTINATION = 'https://signin.alibabacloud.com/saml-role/sso'
+            self.SP_ENTITY_ID = 'urn:alibaba:cloudcomputing:international'
+
         resp_args = {
             'in_response_to': self.IN_RESPONSE_TO,
             'sp_entity_id': self.SP_ENTITY_ID,

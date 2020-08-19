@@ -18,6 +18,8 @@ base_urlpatterns = [
     path('metadata/', idpview.metadata, name='saml2_idp_metadata'),
     path('download/metadata/', idpview.download_metadata, name='saml2_idp_download_metadata'),
     path('aliyun/sso-role/login/', idpview.AliyunSSORoleView.as_view(), name='aliyun_sso_role_login'),
+    path('alibabacloud/sso-role/login/', idpview.AliyunSSORoleView.as_view(), name='alibabacloud_sso_role_login'),
+    # 用户关联阿里云SSO关联信息接口, 与 SSO 流程无关
     path('aliyun/sso-role/', idpview.AliyunSSORoleListCreateAPIView.as_view(), name='aliyun_sso_role_list'),
     path('aliyun/sso-role/<str:username>/',
          idpview.AliyunSSORoleDetailCreateAPIView.as_view(),

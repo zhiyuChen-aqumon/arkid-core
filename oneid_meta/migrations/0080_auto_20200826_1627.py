@@ -7,7 +7,7 @@ import jsonfield.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('oneid_meta', '0078_auto_20200803_2109'),
+        ('oneid_meta', '0079_auto_20200803_2109'),
     ]
 
     operations = [

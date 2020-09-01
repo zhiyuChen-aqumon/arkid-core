@@ -44,6 +44,8 @@ from oneid.permissions import IsAdminUser, IsUserManager
 from oneid_meta.models import SAMLAPP, AliyunSSORole
 from drf_expiring_authtoken.models import ExpiringToken
 
+from sentry_sdk import capture_exception
+
 logger = logging.getLogger(__name__)    # pylint: disable=invalid-name
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -153,6 +155,7 @@ class LoginRequiredMixin(AccessMixin):
             if not exp:
                 return super().dispatch(request, *args, **kwargs)
         except Exception:    # pylint: disable=broad-except
+            capture_exception()
             return self.handle_no_permission(request.session['SAMLRequest'])
 
 
@@ -163,6 +166,7 @@ class IdPHandlerViewMixin:
         getattr(idpsettings, 'SAML_IDP_ERROR_VIEW_CLASS', 'djangosaml2idp.error_views.SamlIDPErrorView'))
 
     def handle_error(self, request, **kwargs):    # pylint: disable=missing-function-docstring
+        capture_exception(request, **kwargs)
         return self.error_view.as_view()(request, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
@@ -252,6 +256,7 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
             token = ExpiringToken.objects.get(key=spauthn)
             return token.user
         except Exception:    # pylint: disable=broad-except
+            capture_exception()
             return request.user
 
     def get(self, request, *args, **kwargs):    # pylint: disable=missing-function-docstring, unused-argument, too-many-locals

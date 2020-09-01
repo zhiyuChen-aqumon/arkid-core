@@ -44,6 +44,7 @@ pyjwkest = "*"
 croniter = "*"
 # mysqlclient = "1.4.6"
 django-mysql = "==3.6.0"
+sentry-sdk = "==0.10.2"
 
 [dev-packages]
 ipython = "*"

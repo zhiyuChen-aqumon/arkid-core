@@ -120,8 +120,12 @@ class DingQrCallbackView(APIView):
             return Response({'err_msg': 'get tmp code error'}, HTTP_400_BAD_REQUEST)
 
         context = self.get_token(ding_id)
+        res = Response(context, HTTP_200_OK)
 
-        return Response(context, HTTP_200_OK)
+        if context['token']:
+            res.set_cookie('spauthn', context['token'])
+
+        return res
 
     def get_token(self, ding_id):    # pylint: disable=no-self-use
         '''

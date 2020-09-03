@@ -123,7 +123,7 @@ class DingQrCallbackView(APIView):
         res = Response(context, HTTP_200_OK)
 
         if context['token']:
-            res.set_cookie('spauthn', context['token'])
+            res.set_cookie('spauthn', context['token'], samesite='Lax')
 
         return res
 

@@ -180,7 +180,7 @@ class DingBindAPIView(GenericAPIView):
         token = user.token
         data = {'token': token, **UserWithPermSerializer(user).data}
         LOG_CLI(user).user_login()
-        return Response(data, HTTP_201_CREATED)
+        return Response(data, HTTP_201_CREATED).set_cookie('spauthn', token, samesite='Lax')
 
 
 class DingRegisterAndBindView(generics.CreateAPIView):
